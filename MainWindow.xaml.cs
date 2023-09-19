@@ -23,17 +23,6 @@ namespace MicroExplorer
     /// </summary>
     public partial class MainWindow : Window
     {
-        List<FileManager> fileManager = new List<FileManager>();
-        public MainWindow()
-        {
-            InitializeComponent();
-            DriveInfo[] drives = DriveInfo.GetDrives();
-            foreach (DriveInfo drive in drives)
-            {
-                ComboBoxDisk.Items.Add(drive.Name +" FullSize: "+ ConvertBiteToGb(drive.TotalSize) +"Gb FreeSpace: "+ ConvertBiteToGb(drive.TotalFreeSpace) +"Gb");
-            }
-        }
-
         struct FileManager {
             public string fileName;
             public DateTime time;
@@ -44,22 +33,52 @@ namespace MicroExplorer
             }
         }
 
-        void AddFileInList(FileManager fileManager) 
-        { 
-            this.fileManager.Add(fileManager);
-            checkFileList();
+        List<FileManager> _fileManager = new List<FileManager>();
+
+        public MainWindow()
+        {
+            InitializeComponent();
+            using (var sw = new StreamWriter("D:\\Test.txt"))
+            { 
+                sw.WriteLine("");
+                sw.Close();
+            }
+            DriveInfo[] drives = DriveInfo.GetDrives();
+            foreach (DriveInfo drive in drives)
+            {
+                ComboBoxDisk.Items.Add(drive.Name +" Всего: "+ ConvertBiteToGb(drive.TotalSize) +"Gb Свободно: "+ ConvertBiteToGb(drive.TotalFreeSpace) +"Gb");
+            }
         }
 
-        void checkFileList() 
+        void AddFileInList(FileManager fileManager) 
         { 
-            foreach (FileManager file in this.fileManager.ToArray())
+            this._fileManager.Add(fileManager);
+            CheckFileList();
+        }
+
+        void CheckFileList() 
+        { 
+            foreach (FileManager file in this._fileManager.ToArray())
             {
                 DateTime currentTime = DateTime.Now;
 
                 if ((currentTime - file.time).Seconds > 10 || (currentTime - file.time).Seconds < 0) 
                 { 
-                    this.fileManager.Remove(file);
+                    this._fileManager.Remove(file);
                 }
+            }
+        }
+
+        void SaveOpennedFileList()
+        {
+            CheckFileList();
+            using (var sw = new StreamWriter("D:\\Test.txt"))
+            {
+                foreach (var file in this._fileManager)
+                {
+                    sw.WriteLine(file.fileName + "\t" + file.time.ToString());
+                }
+                sw.Close();
             }
         }
 
@@ -76,16 +95,12 @@ namespace MicroExplorer
 
             try
             {
-                if (Directory.Exists(diskName))
+                string[] directory = Directory.GetDirectories(diskName);
+                foreach (string dir in directory)
                 {
-                    string[] directory = Directory.GetDirectories(diskName);
-                    foreach (string dir in directory)
-                    {
-                        DirectoryInfo dirInfo = new DirectoryInfo(dir);
-                        ListBoxDirectory.Items.Add(dirInfo.FullName + " || " + dirInfo.LastWriteTime + " || "+ dirInfo.Root);
-                    }
+                    DirectoryInfo dirInfo = new DirectoryInfo(dir);
+                    ListBoxDirectory.Items.Add(dirInfo.FullName + "|| " + dirInfo.LastWriteTime + " || "+ dirInfo.Root);
                 }
-                else ListBoxDirectory.Items.Add("Диск не найден");
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
@@ -118,8 +133,7 @@ namespace MicroExplorer
             {
                 try
                 {
-                    string path = $@"{selectedValue}";//selectedValue.ToString().Replace(@"\", @"\\");
-                    MessageBox.Show(path);
+                    string path = $@"{selectedValue}";
                     Process.Start(path);
                     AddFileInList(new FileManager(path, DateTime.Now));
                 }
@@ -132,11 +146,13 @@ namespace MicroExplorer
 
         private void ButtonExit_Click(object sender, RoutedEventArgs e)
         {
-            checkFileList();
-            foreach (FileManager file in this.fileManager)
-            { 
-                MessageBox.Show(file.fileName + file.time.ToString());
-            }
+            SaveOpennedFileList();
+            Close();
+        }
+
+        private void ClosedWindow(object sender, EventArgs e)
+        {
+            SaveOpennedFileList();
         }
     }
 }

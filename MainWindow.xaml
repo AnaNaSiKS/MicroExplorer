@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:MicroExplorer"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="MicroExplorer" Height="450" Width="800">
+        Title="MicroExplorer" Height="500" Width="900" Closed="ClosedWindow">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
@@ -43,7 +43,7 @@
                     x:Name="ListBoxDirectory"
                     FontSize="20"
                     Foreground="Black"
-                    Height="280"
+                    MaxHeight="325"
                     SelectionChanged="ListBoxFile_Selected"/>
             </ScrollViewer>
         </StackPanel>
@@ -54,12 +54,17 @@
                 FontSize="20"/>
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                 <ListBox 
-                    Height="380"
                     x:Name="ListBoxFile"
-                    FontSize="20" SelectionChanged="ListBoxFileOpen_Selected"/>
+                    FontSize="20" 
+                    MaxHeight="380"
+                    SelectionChanged="ListBoxFileOpen_Selected"/>
             </ScrollViewer>
 
-            <Button Content="Выход" x:Name="ButtonExit" Click="ButtonExit_Click"/>
+            <Button 
+                Content="Выход"
+                x:Name="ButtonExit" 
+                Click="ButtonExit_Click"
+                VerticalAlignment="Bottom"/>
         </StackPanel>
     </Grid>
 </Window>
